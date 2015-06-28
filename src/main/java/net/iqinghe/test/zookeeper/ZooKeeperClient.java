@@ -1,6 +1,7 @@
 package net.iqinghe.test.zookeeper;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.zookeeper.CreateMode;
@@ -23,6 +24,7 @@ public class ZooKeeperClient {
 					if (KeeperState.SyncConnected.equals(event.getState())) {
 						connected.countDown();
 					}
+					System.out.println("state is::::" + event.getState());
 				}
 			});
 			try {
@@ -76,15 +78,30 @@ public class ZooKeeperClient {
 			InterruptedException {
 		String connectString = "192.168.1.105:2181";
 		ZooKeeperClient client = new ZooKeeperClient();
-		boolean result = client.connect(connectString, 60 * 1000, null);
+		boolean result = client.connect(connectString, 10 * 1000, null);
 		System.out.println("connected result is::::" + result);
 		// String create = client.create("/test", "testNode".getBytes());
 		// System.out.println("create result is::::" + create);
 		System.out.println("create emnode is::::"
 				+ client.create("/test1", "testNode2".getBytes(),
-						CreateMode.EPHEMERAL));
-		// List<String> nodes = zk.getChildren("/test", false);
-		// System.out.println("nodes is:" + nodes);
+						CreateMode.EPHEMERAL_SEQUENTIAL));
+		List<String> nodes = client.getServer().getChildren("/", new Watcher() {
+
+			public void process(WatchedEvent event) {
+				System.out.println("get event is::::" + event.getState());
+			}
+		});
+		System.out.println("nodes is:" + nodes);
+		// while (true) {
+		//
+		// }
 	}
 
+	public ZooKeeper getServer() {
+		return server;
+	}
+
+	public void setServer(ZooKeeper server) {
+		this.server = server;
+	}
 }
